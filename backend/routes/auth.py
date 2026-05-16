@@ -6,8 +6,8 @@ from typing import Optional
 import jwt
 import bcrypt
 
-from ..core.config import get_settings
-from ..core.database import get_db
+from core.config import get_settings
+from core.database import get_db
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 settings = get_settings()

@@ -3,8 +3,8 @@ from typing import List, Optional
 from datetime import datetime
 from bson import ObjectId
 
-from ..models.report import ReportCreate, ReportOut
-from ..core.database import get_db
+from models.report import ReportCreate, ReportOut
+from core.database import get_db
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 

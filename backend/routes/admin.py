@@ -5,10 +5,10 @@ from datetime import datetime
 from bson import ObjectId
 import anthropic
 
-from ..models.report import StatusUpdate
-from ..core.database import get_db
-from ..core.config import get_settings
-from .auth import require_admin
+from models.report import StatusUpdate
+from core.database import get_db
+from core.config import get_settings
+from routes.auth import require_admin
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 settings = get_settings()

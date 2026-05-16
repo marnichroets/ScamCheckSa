@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from .core.database import connect_db, close_db
-from .routes import reports, auth, admin
+from core.database import connect_db, close_db
+from routes import reports, auth, admin
 
 
 @asynccontextmanager
