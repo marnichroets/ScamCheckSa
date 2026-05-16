@@ -1,38 +1,29 @@
-from pydantic import BaseModel, Field
-from typing import Optional, Literal
+from pydantic import BaseModel, Field, ConfigDict, GetCoreSchemaHandler
+from pydantic_core import core_schema
+from typing import Optional, Literal, Any
 from datetime import datetime
 from bson import ObjectId
 
 
 class PyObjectId(ObjectId):
     @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler: GetCoreSchemaHandler):
+        return core_schema.no_info_plain_validator_function(cls.validate)
 
     @classmethod
-    def validate(cls, v):
+    def validate(cls, v: Any) -> ObjectId:
         if not ObjectId.is_valid(v):
             raise ValueError("Invalid ObjectId")
         return ObjectId(v)
 
     @classmethod
-    def __modify_schema__(cls, field_schema):
-        field_schema.update(type="string")
+    def __get_pydantic_json_schema__(cls, _core_schema: Any, handler: Any) -> dict:
+        return {"type": "string"}
 
 
 class ReportCreate(BaseModel):
-    name: Optional[str] = None
-    phone: Optional[str] = None
-    bank_account: Optional[str] = None
-    bank_name: Optional[str] = None
-    id_number: Optional[str] = None
-    amount_lost: Optional[float] = None
-    description: str
-    category: Literal["romance", "investment", "phishing", "job", "shopping", "other"] = "other"
-    source: Literal["manual", "facebook", "api"] = "manual"
-
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "name": "John Doe",
                 "phone": "0821234567",
@@ -43,37 +34,45 @@ class ReportCreate(BaseModel):
                 "amount_lost": 15000,
             }
         }
+    )
+
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    bank_account: Optional[str] = None
+    bank_name: Optional[str] = None
+    id_number: Optional[str] = None
+    amount_lost: Optional[float] = None
+    description: str
+    category: Literal["romance", "investment", "phishing", "job", "shopping", "other"] = "other"
+    source: Literal["manual", "facebook", "api"] = "manual"
 
 
 class ReportInDB(ReportCreate):
-    id: Optional[PyObjectId] = Field(alias="_id")
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+    )
+
+    id: Optional[PyObjectId] = Field(default=None, alias="_id")
     status: Literal["pending", "verified", "rejected"] = "pending"
     created_at: datetime = Field(default_factory=datetime.utcnow)
     reviewed_at: Optional[datetime] = None
     reviewed_by: Optional[str] = None
 
-    class Config:
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-
 
 class ReportOut(BaseModel):
     id: str
-    name: Optional[str]
-    phone: Optional[str]
-    bank_account: Optional[str]
-    bank_name: Optional[str]
-    id_number: Optional[str]
-    amount_lost: Optional[float]
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    bank_account: Optional[str] = None
+    bank_name: Optional[str] = None
+    id_number: Optional[str] = None
+    amount_lost: Optional[float] = None
     description: str
     category: str
     status: str
     source: str
     created_at: datetime
-
-    class Config:
-        schema_extra = {}
 
 
 class StatusUpdate(BaseModel):
