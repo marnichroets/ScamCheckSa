@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem C:\\\\ScamCheckSa -ErrorAction SilentlyContinue; if \\(-not \\(Test-Path C:\\\\ScamCheckSa\\)\\) { Write-Host \"Directory does not exist\" })"
+    ]
+  }
+}
