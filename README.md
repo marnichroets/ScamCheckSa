@@ -1,4 +1,4 @@
-# ScamCheckSA
+﻿# ScamCheckSA
 
 South Africa's open scam reporting and verification database.
 
@@ -41,11 +41,11 @@ docker-compose up --build
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| POST | `/api/reports/` | — | Submit scam report |
-| GET | `/api/reports/search?q=&field=` | — | Search verified reports |
-| GET | `/api/reports/{id}` | — | Get single report |
-| POST | `/api/auth/token` | — | Login (returns JWT) |
-| POST | `/api/auth/register` | — | Register user |
+| POST | `/api/reports/` | â€” | Submit scam report |
+| GET | `/api/reports/search?q=&field=` | â€” | Search verified reports |
+| GET | `/api/reports/{id}` | â€” | Get single report |
+| POST | `/api/auth/token` | â€” | Login (returns JWT) |
+| POST | `/api/auth/register` | â€” | Register user |
 | GET | `/api/admin/reports` | Admin | List all reports |
 | PATCH | `/api/admin/reports/{id}` | Admin | Approve / reject |
 | DELETE | `/api/admin/reports/{id}` | Admin | Delete report |
