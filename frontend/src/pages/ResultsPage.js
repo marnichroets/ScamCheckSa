@@ -150,7 +150,8 @@ export default function ResultsPage() {
       setQuery(q);
       doSearch(q, f);
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.get('q'), params.get('field')]);
 
   const handleSearch = (e) => {
     e.preventDefault();

@@ -90,8 +90,8 @@ export default function LoginPage() {
         <p style={s.sub}>Admin access required to review reports.</p>
         <form onSubmit={handleSubmit}>
           <div style={s.field}>
-            <label style={s.label}>Username</label>
-            <input style={s.input} value={username} onChange={(e) => setUsername(e.target.value)} required autoFocus />
+            <label style={s.label}>Username / Email</label>
+            <input style={s.input} value={username} onChange={(e) => setUsername(e.target.value)} placeholder="e.g. marnichr@gmail.com" required autoFocus />
           </div>
           <div style={s.field}>
             <label style={s.label}>Password</label>

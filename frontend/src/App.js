@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import ReportPage from './pages/ReportPage';
 import ResultsPage from './pages/ResultsPage';
@@ -31,6 +31,7 @@ const styles = {
 };
 
 function Navbar() {
+  useLocation(); // subscribe to route changes so token re-reads after login/logout
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
 
