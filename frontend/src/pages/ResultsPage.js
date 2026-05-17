@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 import useWindowWidth from '../hooks/useWindowWidth';
@@ -65,7 +65,7 @@ export default function ResultsPage() {
   const [query, setQuery] = useState(params.get('q') || '');
   const [field, setField] = useState(params.get('field') || 'all');
 
-  const doSearch = async (q, f) => {
+  const doSearch = useCallback(async (q, f) => {
     if (!q.trim()) return;
     setLoading(true);
     setSearched(true);
@@ -78,13 +78,13 @@ export default function ResultsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const q = params.get('q');
     const f = params.get('field') || 'all';
     if (q) { setQuery(q); setField(f); doSearch(q, f); }
-  }, [params.get('q'), params.get('field')]); // eslint-disable-line
+  }, [params, doSearch]);
 
   const handleSearch = (e) => {
     e.preventDefault();

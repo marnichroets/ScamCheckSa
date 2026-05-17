@@ -106,7 +106,7 @@ export default function ScammerProfilePage() {
   return (
     <div style={s.page}>
       <div style={s.container}>
-        <Link to={-1} style={s.back} onClick={e => { e.preventDefault(); navigate(-1); }}>← Back</Link>
+        <button style={{ ...s.back, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }} onClick={() => navigate(-1)}>← Back</button>
 
         {/* Hero */}
         <div style={s.hero}>
