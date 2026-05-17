@@ -12,4 +12,19 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Automatically log out and redirect on token expiry
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      const isAuthRoute = error.config?.url?.includes('/auth/token');
+      if (!isAuthRoute) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;
