@@ -84,8 +84,7 @@ export default function ResultsPage() {
     const q = params.get('q');
     const f = params.get('field') || 'all';
     if (q) { setQuery(q); setField(f); doSearch(q, f); }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.get('q'), params.get('field')]);
+  }, [params.get('q'), params.get('field')]); // eslint-disable-line
 
   const handleSearch = (e) => {
     e.preventDefault();
