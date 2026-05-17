@@ -1,6 +1,9 @@
-from fastapi import APIRouter, HTTPException, Depends, Query
+import json
+import re
+import base64
+from fastapi import APIRouter, HTTPException, Depends, Query, Form, File, UploadFile
 from pydantic import BaseModel
-from typing import Optional, Literal
+from typing import Optional
 from datetime import datetime
 from bson import ObjectId
 import anthropic
@@ -12,6 +15,8 @@ from routes.auth import require_admin
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 settings = get_settings()
+
+ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
 
 
 def serialize(doc: dict) -> dict:
@@ -78,13 +83,8 @@ async def delete_report(
     return {"message": "Report deleted."}
 
 
-class FacebookPostInput(BaseModel):
-    text: str
-    source_url: Optional[str] = None
-
-
 PARSE_SYSTEM_PROMPT = """You are a scam report extractor for ScamCheckSA, a South African scam registry.
-Extract structured data from Facebook posts about scammers.
+Extract structured data from Facebook posts or screenshots about scammers.
 
 Return ONLY valid JSON with these fields (use null for missing values):
 {
@@ -98,20 +98,56 @@ Return ONLY valid JSON with these fields (use null for missing values):
   "category": one of: "romance", "investment", "phishing", "job", "shopping", "other"
 }
 
-Be conservative — only extract information explicitly stated in the post.
+Be conservative — only extract information explicitly stated in the post or visible in the image.
 """
 
 
 @router.post("/parse-facebook-post", response_model=dict)
 async def parse_facebook_post(
-    payload: FacebookPostInput,
+    text: Optional[str] = Form(None),
+    source_url: Optional[str] = Form(None),
+    file: Optional[UploadFile] = File(None),
     _=Depends(require_admin),
 ):
     if not settings.anthropic_api_key:
         raise HTTPException(status_code=503, detail="Anthropic API key not configured.")
 
-    if len(payload.text.strip()) < 20:
-        raise HTTPException(status_code=422, detail="Post text is too short to parse.")
+    has_text = bool(text and text.strip())
+    has_image = file is not None and file.filename
+
+    if not has_text and not has_image:
+        raise HTTPException(status_code=422, detail="Provide post text, an image, or both.")
+
+    content = []
+
+    if has_image:
+        media_type = file.content_type or "image/jpeg"
+        if media_type not in ALLOWED_IMAGE_TYPES:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Unsupported image type '{media_type}'. Use JPEG, PNG, GIF, or WebP.",
+            )
+        image_bytes = await file.read()
+        if len(image_bytes) > 20 * 1024 * 1024:
+            raise HTTPException(status_code=422, detail="Image exceeds 20 MB limit.")
+
+        content.append({
+            "type": "image",
+            "source": {
+                "type": "base64",
+                "media_type": media_type,
+                "data": base64.standard_b64encode(image_bytes).decode(),
+            },
+        })
+
+    if has_text and has_image:
+        prompt = f"Extract scammer details from this Facebook post screenshot. Additional context from the post:\n\n{text.strip()}"
+    elif has_image:
+        prompt = "Extract scammer details from this Facebook post screenshot."
+    else:
+        prompt = f"Extract scammer details from this Facebook post:\n\n{text.strip()}"
+
+    content.append({"type": "text", "text": prompt})
 
     client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
 
@@ -120,30 +156,22 @@ async def parse_facebook_post(
             model="claude-sonnet-4-6",
             max_tokens=1024,
             system=PARSE_SYSTEM_PROMPT,
-            messages=[
-                {
-                    "role": "user",
-                    "content": f"Extract scammer details from this Facebook post:\n\n{payload.text}",
-                }
-            ],
+            messages=[{"role": "user", "content": content}],
         )
     except anthropic.APIError as e:
         raise HTTPException(status_code=502, detail=f"Claude API error: {str(e)}")
-
-    import json
 
     raw = message.content[0].text.strip()
     try:
         extracted = json.loads(raw)
     except json.JSONDecodeError:
-        import re
         match = re.search(r"\{.*\}", raw, re.DOTALL)
         if not match:
             raise HTTPException(status_code=502, detail="Could not parse Claude response as JSON.")
         extracted = json.loads(match.group())
 
     extracted["source"] = "facebook"
-    if payload.source_url:
-        extracted["source_url"] = payload.source_url
+    if source_url:
+        extracted["source_url"] = source_url
 
     return {"extracted": extracted, "raw_response": raw}
