@@ -2,76 +2,92 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 
-function getRiskScore(report) {
-  let score = 0;
-  if (report.phone) score += 20;
-  if (report.bank_account) score += 25;
-  if (report.id_number) score += 30;
-  if (report.name) score += 10;
-  if (report.amount_lost > 0) score += 10;
-  if (report.source === 'facebook') score += 5;
-  return Math.min(score, 100);
+const CAT_COLORS = {
+  romance: '#E53935', investment: '#E8A01A', phishing: '#1a73e8',
+  shopping: '#22C55E', job: '#A855F7', other: '#64748B',
+};
+
+const CAT_ICONS = {
+  romance: '💔', investment: '📈', phishing: '🎣',
+  shopping: '🛒', job: '💼', other: '⚠️',
+};
+
+function getRiskScore(r) {
+  let s = 0;
+  if (r.phone)        s += 20;
+  if (r.bank_account) s += 25;
+  if (r.id_number)    s += 30;
+  if (r.name)         s += 10;
+  if (r.amount_lost > 0) s += 10;
+  if (r.source === 'facebook') s += 5;
+  return Math.min(s, 100);
 }
 
 function getRiskLevel(score) {
-  if (score <= 30) return { label: 'Low Risk',    color: '#4caf50', bg: '#1a2a1a', border: '#2d5a2d' };
-  if (score <= 65) return { label: 'Medium Risk', color: '#ff7043', bg: '#2a1a12', border: '#7a3a20' };
-  return              { label: 'High Risk',   color: '#ef5350', bg: '#2a1a1a', border: '#5a2d2d' };
+  if (score >= 70) return { label: 'High Risk',   color: '#EF5350', bg: 'rgba(239,83,80,0.08)',  border: 'rgba(239,83,80,0.25)' };
+  if (score >= 40) return { label: 'Medium Risk', color: '#FF7043', bg: 'rgba(255,112,67,0.08)', border: 'rgba(255,112,67,0.25)' };
+  return               { label: 'Low Risk',    color: '#22C55E', bg: 'rgba(34,197,94,0.08)',  border: 'rgba(34,197,94,0.25)' };
 }
 
-const s = {
-  page: { minHeight: 'calc(100vh - 60px)', background: '#0A0E14', padding: '2rem 1rem' },
-  container: { maxWidth: '720px', margin: '0 auto' },
-  back: { color: '#6b7280', fontSize: '0.875rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', marginBottom: '1.5rem' },
-  hero: { background: '#0d1117', border: '1px solid #1e2a3a', borderRadius: '12px', padding: '1.75rem', marginBottom: '1rem' },
-  heroTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.75rem' },
-  name: { color: '#fff', fontSize: '1.5rem', fontWeight: 800 },
-  verifiedBadge: { display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: '#1a2a1a', border: '1px solid #2d5a2d', color: '#4caf50', borderRadius: '20px', padding: '0.3rem 0.75rem', fontSize: '0.8rem', fontWeight: 600 },
-  catBadge: { background: '#1a2535', border: '1px solid #1a3a6e', color: '#5b9cf6', borderRadius: '20px', padding: '0.3rem 0.75rem', fontSize: '0.8rem', fontWeight: 600 },
-  heroMeta: { color: '#6b7280', fontSize: '0.85rem' },
-  riskBar: { marginTop: '1.25rem' },
-  riskLabel: { display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' },
-  riskText: { fontSize: '0.8rem', color: '#6b7280' },
-  barTrack: { height: '6px', background: '#1e2a3a', borderRadius: '3px', overflow: 'hidden' },
-  section: { background: '#0d1117', border: '1px solid #1e2a3a', borderRadius: '12px', padding: '1.5rem', marginBottom: '1rem' },
-  sectionTitle: { color: '#6b7280', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1rem' },
-  grid: { display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '0.6rem 1.5rem' },
-  fieldLabel: { color: '#6b7280', fontSize: '0.875rem', whiteSpace: 'nowrap', paddingTop: '2px' },
-  fieldVal: { color: '#e0e0e0', fontSize: '0.875rem', fontFamily: 'monospace' },
-  desc: { color: '#c0c8d4', lineHeight: 1.7, fontSize: '0.9rem' },
-  amount: { color: '#ef5350', fontWeight: 700, fontSize: '1.1rem', fontFamily: 'monospace' },
-  actions: { display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.5rem' },
-  btnPrimary: { padding: '0.8rem 1.5rem', background: '#1a73e8', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem', textDecoration: 'none', display: 'inline-block' },
-  btnSecondary: { padding: '0.8rem 1.5rem', background: 'transparent', border: '1px solid #1e2a3a', borderRadius: '8px', color: '#9aa3ae', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem', textDecoration: 'none', display: 'inline-block' },
-  shareBtn: { padding: '0.8rem 1.5rem', background: '#1a2a1a', border: '1px solid #2d5a2d', borderRadius: '8px', color: '#4caf50', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' },
-  loading: { textAlign: 'center', color: '#6b7280', padding: '4rem' },
-  notFound: { textAlign: 'center', padding: '4rem 2rem' },
-  notFoundTitle: { color: '#fff', fontSize: '1.3rem', fontWeight: 700, marginBottom: '0.5rem' },
-  notFoundSub: { color: '#6b7280', marginBottom: '1.5rem' },
-};
+function getInitials(name) {
+  if (!name) return '?';
+  return name.split(' ').slice(0, 2).map(n => n[0]?.toUpperCase() || '').join('');
+}
 
-function Field({ label, value, mono = true }) {
+function RiskGauge({ score, color }) {
+  const [animated, setAnimated] = useState(0);
+  const r = 38;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (animated / 100) * circ;
+
+  useEffect(() => {
+    const t = setTimeout(() => setAnimated(score), 100);
+    return () => clearTimeout(t);
+  }, [score]);
+
+  return (
+    <div style={{ position: 'relative', width: 100, height: 100 }}>
+      <svg width="100" height="100" style={{ transform: 'rotate(-90deg)' }}>
+        <circle cx="50" cy="50" r={r} fill="none" stroke="#1C2636" strokeWidth="8" />
+        <circle
+          cx="50" cy="50" r={r}
+          fill="none" stroke={color} strokeWidth="8"
+          strokeDasharray={circ}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          style={{ transition: 'stroke-dashoffset 1.2s ease' }}
+        />
+      </svg>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ fontSize: '1.6rem', fontWeight: 900, color, lineHeight: 1 }}>{score}</div>
+        <div style={{ fontSize: '0.55rem', color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Risk</div>
+      </div>
+    </div>
+  );
+}
+
+function InfoRow({ label, value, mono = true, accent }) {
   if (!value && value !== 0) return null;
   return (
-    <>
-      <div style={s.fieldLabel}>{label}</div>
-      <div style={mono ? s.fieldVal : { ...s.fieldVal, fontFamily: 'inherit' }}>{value}</div>
-    </>
+    <div style={{ display: 'flex', gap: '1rem', padding: '0.75rem 0', borderBottom: '1px solid #1C2636', alignItems: 'flex-start' }}>
+      <div style={{ color: '#475569', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', minWidth: 100, flexShrink: 0, paddingTop: 1 }}>{label}</div>
+      <div style={{ color: accent || (mono ? '#94A3B8' : '#E2E8F0'), fontSize: '0.875rem', fontFamily: mono ? 'monospace' : 'inherit', fontWeight: accent ? 700 : 400, flex: 1 }}>{value}</div>
+    </div>
   );
 }
 
 export default function ScammerProfilePage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [report, setReport] = useState(null);
+  const [report, setReport]   = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied]   = useState(false);
 
   useEffect(() => {
     api.get(`/reports/${id}`)
       .then(({ data }) => setReport(data))
-      .catch(err => { if (err.response?.status === 404 || err.response?.status === 400) setNotFound(true); })
+      .catch(err => { if ([404, 400].includes(err.response?.status)) setNotFound(true); })
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -82,101 +98,192 @@ export default function ScammerProfilePage() {
     });
   };
 
-  if (loading) return <div style={s.page}><div style={s.loading}>Loading report...</div></div>;
-
-  if (notFound) {
-    return (
-      <div style={s.page}>
-        <div style={s.container}>
-          <div style={s.notFound}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🔍</div>
-            <div style={s.notFoundTitle}>Report not found</div>
-            <p style={s.notFoundSub}>This report may not exist, may be under review, or may have been removed.</p>
-            <Link to="/" style={s.btnPrimary}>Back to search</Link>
-          </div>
-        </div>
+  if (loading) return (
+    <div style={{ minHeight: 'calc(100vh - 64px)', background: '#080B10', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div>
+        <div style={{ width: 44, height: 44, border: '3px solid #1C2636', borderTopColor: '#E53935', borderRadius: '50%', margin: '0 auto 1rem', animation: 'spin 0.8s linear infinite' }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        <div style={{ color: '#64748B', fontSize: '0.9rem' }}>Loading report...</div>
       </div>
-    );
-  }
+    </div>
+  );
+
+  if (notFound) return (
+    <div style={{ minHeight: 'calc(100vh - 64px)', background: '#080B10', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+      <div style={{ textAlign: 'center', maxWidth: '400px' }}>
+        <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🔍</div>
+        <h2 style={{ color: '#E2E8F0', fontSize: '1.4rem', fontWeight: 800, marginBottom: '0.5rem' }}>Report Not Found</h2>
+        <p style={{ color: '#64748B', marginBottom: '1.5rem', lineHeight: 1.6 }}>
+          This report may not exist, may be under review, or may have been removed.
+        </p>
+        <Link to="/" style={{ display: 'inline-block', padding: '0.8rem 2rem', background: '#E53935', color: '#fff', fontWeight: 700, borderRadius: '10px', textDecoration: 'none' }}>
+          Back to Search
+        </Link>
+      </div>
+    </div>
+  );
 
   const score = getRiskScore(report);
-  const risk = getRiskLevel(score);
+  const risk  = getRiskLevel(score);
+  const cat   = report.category || 'other';
+  const catColor = CAT_COLORS[cat] || '#64748B';
+  const catIcon  = CAT_ICONS[cat]  || '⚠️';
   const hasIdentifiers = report.phone || report.bank_account || report.id_number;
 
   return (
-    <div style={s.page}>
-      <div style={s.container}>
-        <button style={{ ...s.back, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }} onClick={() => navigate(-1)}>← Back</button>
+    <div style={{ minHeight: 'calc(100vh - 64px)', background: '#080B10', padding: '2rem 1rem 5rem' }}>
+      <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
-        {/* Hero */}
-        <div style={s.hero}>
-          <div style={s.heroTop}>
-            <div>
-              <h1 style={s.name}>{report.name || 'Unknown Scammer'}</h1>
-              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-                <span style={s.verifiedBadge}>✓ Verified</span>
-                <span style={s.catBadge}>{report.category}</span>
+        {/* Back */}
+        <button
+          onClick={() => navigate(-1)}
+          style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', fontSize: '0.875rem', padding: '0 0 1.5rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+        >
+          ← Back to results
+        </button>
+
+        {/* ── HERO CARD ── */}
+        <div style={{ background: '#0D1117', border: '1px solid #1C2636', borderRadius: '16px', padding: '2rem', marginBottom: '1rem', position: 'relative', overflow: 'hidden' }}>
+          {/* Red top accent */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: `linear-gradient(90deg, ${risk.color}, transparent)` }} />
+
+          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+            {/* Avatar */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{ width: 72, height: 72, borderRadius: '16px', background: `${catColor}20`, border: `2px solid ${catColor}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 900, color: catColor }}>
+                {getInitials(report.name)}
+              </div>
+              <div style={{ padding: '0.25rem 0.7rem', borderRadius: '999px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', color: '#22C55E', fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.3px' }}>
+                ✓ VERIFIED
               </div>
             </div>
-            <div style={{ background: risk.bg, border: `1px solid ${risk.border}`, color: risk.color, borderRadius: '8px', padding: '0.5rem 1rem', fontWeight: 700, fontSize: '0.85rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
-              {risk.label}
+
+            {/* Name & badges */}
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <h1 style={{ color: '#E2E8F0', fontSize: 'clamp(1.3rem, 4vw, 1.8rem)', fontWeight: 900, letterSpacing: '-0.5px', marginBottom: '0.6rem' }}>
+                {report.name || 'Unknown Scammer'}
+              </h1>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: catColor, background: `${catColor}15`, border: `1px solid ${catColor}30`, borderRadius: '999px', padding: '0.25rem 0.75rem' }}>
+                  {catIcon} {cat}
+                </span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: risk.color, background: risk.bg, border: `1px solid ${risk.border}`, borderRadius: '999px', padding: '0.25rem 0.75rem' }}>
+                  {risk.label}
+                </span>
+              </div>
+              <div style={{ color: '#475569', fontSize: '0.82rem' }}>
+                Reported {new Date(report.created_at).toLocaleDateString('en-ZA', { year: 'numeric', month: 'long', day: 'numeric' })}
+                {report.source && report.source !== 'manual' && ` · Source: ${report.source}`}
+              </div>
             </div>
-          </div>
-          <div style={s.heroMeta}>
-            Reported {new Date(report.created_at).toLocaleDateString('en-ZA', { year: 'numeric', month: 'long', day: 'numeric' })}
-            {report.source !== 'manual' && ` · Source: ${report.source}`}
+
+            {/* Risk gauge */}
+            <RiskGauge score={score} color={risk.color} />
           </div>
 
           {/* Risk bar */}
-          <div style={s.riskBar}>
-            <div style={s.riskLabel}>
-              <span style={s.riskText}>Risk score</span>
-              <span style={{ ...s.riskText, color: risk.color, fontWeight: 600 }}>{score}/100</span>
+          <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid #1C2636' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+              <span style={{ color: '#64748B', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Risk Score Breakdown</span>
+              <span style={{ color: risk.color, fontSize: '0.8rem', fontWeight: 800 }}>{score} / 100</span>
             </div>
-            <div style={s.barTrack}>
-              <div style={{ height: '100%', width: `${score}%`, background: risk.color, borderRadius: '3px', transition: 'width 0.6s ease' }} />
+            <div style={{ height: '6px', background: '#1C2636', borderRadius: '3px', overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${score}%`, background: `linear-gradient(90deg, ${risk.color}aa, ${risk.color})`, borderRadius: '3px', transition: 'width 1s ease 0.2s' }} />
+            </div>
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
+              {[
+                { label: 'Phone',   pts: report.phone        ? 20 : 0, max: 20 },
+                { label: 'Bank',    pts: report.bank_account ? 25 : 0, max: 25 },
+                { label: 'ID',      pts: report.id_number    ? 30 : 0, max: 30 },
+                { label: 'Name',    pts: report.name         ? 10 : 0, max: 10 },
+                { label: 'Amount',  pts: report.amount_lost > 0 ? 10 : 0, max: 10 },
+              ].map(f => (
+                <div key={f.label} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: f.pts > 0 ? risk.color : '#1C2636' }} />
+                  <span style={{ color: f.pts > 0 ? '#94A3B8' : '#475569', fontSize: '0.72rem' }}>{f.label} +{f.pts}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Identifiers */}
+        {/* ── IDENTIFIERS ── */}
         {hasIdentifiers && (
-          <div style={s.section}>
-            <div style={s.sectionTitle}>Identifiers</div>
-            <div style={s.grid}>
-              <Field label="Phone" value={report.phone} />
-              <Field label="Bank account" value={report.bank_account ? `${report.bank_account}${report.bank_name ? ` (${report.bank_name})` : ''}` : null} />
-              <Field label="ID number" value={report.id_number} />
-            </div>
+          <div style={{ background: '#0D1117', border: '1px solid #1C2636', borderRadius: '16px', padding: '1.75rem', marginBottom: '1rem' }}>
+            <SectionTitle>🔎 Identifiers</SectionTitle>
+            <InfoRow label="Phone"        value={report.phone} />
+            <InfoRow label="Bank account" value={report.bank_account} />
+            <InfoRow label="Bank name"    value={report.bank_name} mono={false} />
+            <InfoRow label="SA ID number" value={report.id_number} />
           </div>
         )}
 
-        {/* Scam details */}
-        <div style={s.section}>
-          <div style={s.sectionTitle}>Scam details</div>
+        {/* ── SCAM DETAILS ── */}
+        <div style={{ background: '#0D1117', border: '1px solid #1C2636', borderRadius: '16px', padding: '1.75rem', marginBottom: '1rem' }}>
+          <SectionTitle>📋 Scam Details</SectionTitle>
           {report.amount_lost > 0 && (
-            <div style={{ marginBottom: '1rem' }}>
-              <div style={{ color: '#6b7280', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Amount lost</div>
-              <div style={s.amount}>R{report.amount_lost.toLocaleString('en-ZA')}</div>
+            <div style={{ background: 'rgba(239,83,80,0.06)', border: '1px solid rgba(239,83,80,0.2)', borderRadius: '10px', padding: '1rem 1.25rem', marginBottom: '1.25rem' }}>
+              <div style={{ color: '#64748B', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.25rem' }}>Total amount lost</div>
+              <div style={{ color: '#EF5350', fontSize: '1.6rem', fontWeight: 900, fontFamily: 'monospace', letterSpacing: '-0.5px' }}>
+                R{report.amount_lost.toLocaleString('en-ZA')}
+              </div>
             </div>
           )}
-          <p style={s.desc}>{report.description}</p>
+          {report.description && (
+            <div>
+              <div style={{ color: '#475569', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.75rem' }}>Description</div>
+              <p style={{ color: '#94A3B8', lineHeight: 1.75, fontSize: '0.9rem', margin: 0 }}>{report.description}</p>
+            </div>
+          )}
         </div>
 
-        {/* Actions */}
-        <div style={s.section}>
-          <div style={s.sectionTitle}>Actions</div>
-          <div style={s.actions}>
-            <Link to="/report" style={s.btnPrimary}>+ Report this scammer too</Link>
-            <a href="https://trusttrade.co.za" target="_blank" rel="noopener noreferrer" style={s.btnSecondary}>
-              Check on TrustTrade ↗
-            </a>
-            <button style={s.shareBtn} onClick={copyLink}>
-              {copied ? '✓ Link copied!' : 'Copy link'}
+        {/* ── WARNING BOX ── */}
+        <div style={{ background: 'rgba(229,57,53,0.05)', border: '1px solid rgba(229,57,53,0.2)', borderRadius: '14px', padding: '1.25rem 1.5rem', marginBottom: '1rem', display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+          <span style={{ fontSize: '1.25rem', flexShrink: 0, marginTop: '1px' }}>⚠️</span>
+          <div>
+            <div style={{ color: '#EF5350', fontWeight: 700, fontSize: '0.875rem', marginBottom: '0.3rem' }}>Scam Warning</div>
+            <p style={{ color: '#94A3B8', fontSize: '0.82rem', lineHeight: 1.6, margin: 0 }}>
+              This person has been reported and verified as a scammer by our team. Do not send money, share personal information, or engage with this individual. Report any further activity to the{' '}
+              <strong style={{ color: '#E2E8F0' }}>South African Police Service (SAPS)</strong> and your bank immediately.
+            </p>
+          </div>
+        </div>
+
+        {/* ── ACTIONS ── */}
+        <div style={{ background: '#0D1117', border: '1px solid #1C2636', borderRadius: '16px', padding: '1.75rem' }}>
+          <SectionTitle>🛠️ Actions</SectionTitle>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <Link
+              to="/report"
+              style={{ padding: '0.75rem 1.4rem', background: '#E53935', borderRadius: '10px', color: '#fff', fontWeight: 700, textDecoration: 'none', fontSize: '0.875rem', display: 'inline-block' }}
+            >
+              + Report this scammer too
+            </Link>
+            <button
+              onClick={copyLink}
+              style={{ padding: '0.75rem 1.4rem', background: 'transparent', border: '1px solid #1C2636', borderRadius: '10px', color: copied ? '#22C55E' : '#94A3B8', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}
+            >
+              {copied ? '✓ Link copied!' : '📋 Copy link'}
             </button>
+            <a
+              href="https://www.saps.gov.za"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ padding: '0.75rem 1.4rem', background: 'transparent', border: '1px solid #1C2636', borderRadius: '10px', color: '#94A3B8', fontWeight: 600, textDecoration: 'none', fontSize: '0.875rem', display: 'inline-block' }}
+            >
+              Report to SAPS ↗
+            </a>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function SectionTitle({ children }) {
+  return (
+    <div style={{ color: '#E2E8F0', fontWeight: 800, fontSize: '0.9rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      {children}
     </div>
   );
 }
