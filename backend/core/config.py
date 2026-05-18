@@ -11,6 +11,11 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     admin_username: str = "admin"
     admin_password: str = "admin123"
+    admin_email: str = "marnichr@gmail.com"
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    frontend_url: str = "http://localhost:3000"
+    backend_url: str = "http://localhost:8000"
 
     class Config:
         env_file = ".env"

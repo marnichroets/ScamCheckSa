@@ -5,6 +5,7 @@ import ReportPage from './pages/ReportPage';
 import ResultsPage from './pages/ResultsPage';
 import AdminPage from './pages/AdminPage';
 import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import NotFoundPage from './pages/NotFoundPage';
 import ScammerProfilePage from './pages/ScammerProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -67,7 +68,10 @@ function Navbar() {
                   <button style={{ ...styles.mobileLink, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }} onClick={handleLogout}>Logout</button>
                 </>
               ) : (
-                <Link to="/login" style={styles.mobileLink} onClick={close}>Login</Link>
+                <>
+                  <Link to="/login" style={styles.mobileLink} onClick={close}>Login</Link>
+                  <Link to="/register" style={styles.mobileLink} onClick={close}>Register</Link>
+                </>
               )}
             </div>
           )}
@@ -82,7 +86,10 @@ function Navbar() {
               <li><button style={styles.logoutBtn} onClick={handleLogout}>Logout</button></li>
             </>
           ) : (
-            <li><Link to="/login" style={styles.navLink}>Login</Link></li>
+            <>
+              <li><Link to="/login" style={styles.navLink}>Login</Link></li>
+              <li><Link to="/register" style={styles.navLink}>Register</Link></li>
+            </>
           )}
         </ul>
       )}
@@ -101,6 +108,7 @@ export default function App() {
           <Route path="/results" element={<ResultsPage />} />
           <Route path="/scammer/:id" element={<ScammerProfilePage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

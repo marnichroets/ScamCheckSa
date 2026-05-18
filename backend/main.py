@@ -2,8 +2,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
+from core.config import get_settings
 from core.database import connect_db, close_db
 from routes import reports, auth, admin
+
+settings = get_settings()
 
 
 @asynccontextmanager
@@ -20,9 +23,16 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+allowed_origins = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+]
+if settings.frontend_url and settings.frontend_url not in allowed_origins:
+    allowed_origins.append(settings.frontend_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
