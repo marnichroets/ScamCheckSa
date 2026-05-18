@@ -3,12 +3,12 @@ import re
 import base64
 from fastapi import APIRouter, HTTPException, Depends, Query, Form, File, UploadFile
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from bson import ObjectId
 import anthropic
 
-from models.report import StatusUpdate
+from models.report import StatusUpdate, DisputeAction
 from core.database import get_db
 from core.config import get_settings
 from routes.auth import require_admin
@@ -175,3 +175,53 @@ async def parse_facebook_post(
         extracted["source_url"] = source_url
 
     return {"extracted": extracted, "raw_response": raw}
+
+
+@router.get("/disputes", response_model=list)
+async def list_disputes(
+    status: Optional[str] = Query("pending"),
+    db=Depends(get_db),
+    _=Depends(require_admin),
+):
+    query = {} if status == "all" else {"status": status}
+    cursor = db.disputes.find(query).sort("created_at", -1).limit(200)
+    results = []
+    async for doc in cursor:
+        doc["id"] = str(doc.pop("_id"))
+        results.append(doc)
+    return results
+
+
+@router.patch("/disputes/{dispute_id}", response_model=dict)
+async def resolve_dispute(
+    dispute_id: str,
+    body: DisputeAction,
+    db=Depends(get_db),
+    admin=Depends(require_admin),
+):
+    if not ObjectId.is_valid(dispute_id):
+        raise HTTPException(status_code=400, detail="Invalid dispute ID.")
+
+    dispute = await db.disputes.find_one({"_id": ObjectId(dispute_id)})
+    if not dispute:
+        raise HTTPException(status_code=404, detail="Dispute not found.")
+
+    report_id = dispute.get("report_id")
+
+    await db.disputes.update_one(
+        {"_id": ObjectId(dispute_id)},
+        {"$set": {"status": "upheld" if body.action == "uphold" else "dismissed", "resolved_at": datetime.utcnow()}},
+    )
+
+    if body.action == "uphold" and report_id and ObjectId.is_valid(report_id):
+        await db.reports.update_one(
+            {"_id": ObjectId(report_id)},
+            {"$set": {"status": "rejected", "dispute_status": "upheld"}},
+        )
+    elif body.action == "dismiss" and report_id and ObjectId.is_valid(report_id):
+        await db.reports.update_one(
+            {"_id": ObjectId(report_id)},
+            {"$set": {"dispute_status": None}},
+        )
+
+    return {"message": f"Dispute {body.action}ed."}

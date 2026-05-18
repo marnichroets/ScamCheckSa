@@ -72,6 +72,7 @@ export default function AdminPage() {
   const isMobile = useWindowWidth() < 640;
   const [tab, setTab] = useState('pending');
   const [reports, setReports] = useState([]);
+  const [disputes, setDisputes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fbText, setFbText] = useState('');
   const [imgFile, setImgFile] = useState(null);
@@ -99,7 +100,23 @@ export default function AdminPage() {
     }
   }, [navigate]);
 
-  useEffect(() => { fetchReports(tab); }, [tab, fetchReports]);
+  const fetchDisputes = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.get('/admin/disputes');
+      setDisputes(data);
+    } catch (err) {
+      if (err.response?.status === 403) navigate('/login');
+      else toast('Failed to load disputes', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    if (tab === 'disputes') fetchDisputes();
+    else fetchReports(tab);
+  }, [tab, fetchReports, fetchDisputes]);
 
   const updateStatus = async (id, status) => {
     try {
@@ -235,21 +252,61 @@ export default function AdminPage() {
 
         {/* Report Queue */}
         <div style={s.tabs}>
-          {['pending', 'verified', 'rejected'].map(t => (
+          {['pending', 'verified', 'rejected', 'disputes'].map(t => (
             <button key={t} style={s.tab(tab === t)} onClick={() => setTab(t)}>
               {t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
           ))}
         </div>
 
-        {loading && <div style={s.empty}>Loading reports...</div>}
-        {!loading && reports.length === 0 && <div style={s.empty}>No {tab} reports.</div>}
+        {loading && <div style={s.empty}>Loading...</div>}
 
-        {!loading && reports.map(report => (
+        {/* Disputes tab */}
+        {!loading && tab === 'disputes' && disputes.length === 0 && <div style={s.empty}>No pending disputes.</div>}
+        {!loading && tab === 'disputes' && disputes.map(dispute => (
+          <div key={dispute.id} style={s.card}>
+            <div style={s.cardTop}>
+              <span style={s.reportName}>Dispute from: {dispute.name}</span>
+              <span style={{ ...s.badge('pending'), background: '#2a2a1a', color: '#E8A01A' }}>pending</span>
+            </div>
+            <div style={s.meta}>📧 {dispute.email} · 🪪 {dispute.id_number} · {new Date(dispute.created_at).toLocaleDateString('en-ZA')}</div>
+            <p style={s.desc}><strong>Reason:</strong> {dispute.reason}</p>
+            {dispute.evidence_notes && <p style={s.desc}><strong>Evidence:</strong> {dispute.evidence_notes}</p>}
+            <div style={s.meta}>Report ID: {dispute.report_id}</div>
+            <div style={s.actions}>
+              <button style={s.actionBtn('verify')} onClick={async () => {
+                try {
+                  await api.patch(`/admin/disputes/${dispute.id}`, { action: 'uphold' });
+                  setDisputes(prev => prev.filter(d => d.id !== dispute.id));
+                  toast('Dispute upheld — report rejected', 'success');
+                } catch { toast('Failed to resolve dispute', 'error'); }
+              }}>Uphold (remove report)</button>
+              <button style={s.actionBtn('reject')} onClick={async () => {
+                try {
+                  await api.patch(`/admin/disputes/${dispute.id}`, { action: 'dismiss' });
+                  setDisputes(prev => prev.filter(d => d.id !== dispute.id));
+                  toast('Dispute dismissed', 'success');
+                } catch { toast('Failed to resolve dispute', 'error'); }
+              }}>Dismiss</button>
+            </div>
+          </div>
+        ))}
+
+        {!loading && tab !== 'disputes' && reports.length === 0 && <div style={s.empty}>No {tab} reports.</div>}
+
+        {!loading && tab !== 'disputes' && reports.map(report => (
           <div key={report.id} style={s.card}>
             <div style={s.cardTop}>
-              <span style={s.reportName}>{report.name || 'Unknown'}</span>
-              <span style={s.badge(report.status)}>{report.status}</span>
+              <span style={s.reportName}>
+                {report.entity_type === 'business' ? '🏢 ' : '👤 '}
+                {report.name || 'Unknown'}
+              </span>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                {report.dispute_status === 'under_review' && (
+                  <span style={{ padding: '0.2rem 0.6rem', borderRadius: '20px', fontSize: '0.72rem', fontWeight: 600, background: '#2a2a1a', color: '#E8A01A' }}>⚠️ Disputed</span>
+                )}
+                <span style={s.badge(report.status)}>{report.status}</span>
+              </div>
             </div>
             <MetaLine report={report} />
             <p style={s.desc}>{report.description}</p>

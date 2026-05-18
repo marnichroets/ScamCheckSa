@@ -36,11 +36,14 @@ class ReportCreate(BaseModel):
         }
     )
 
+    entity_type: Literal["person", "business"] = "person"
     name: Optional[str] = None
     phone: Optional[str] = None
     bank_account: Optional[str] = None
     bank_name: Optional[str] = None
     id_number: Optional[str] = None
+    registration_number: Optional[str] = None
+    website: Optional[str] = None
     amount_lost: Optional[float] = None
     description: str
     category: Literal["romance", "investment", "phishing", "job", "shopping", "other"] = "other"
@@ -55,6 +58,7 @@ class ReportInDB(ReportCreate):
 
     id: Optional[PyObjectId] = Field(default=None, alias="_id")
     status: Literal["pending", "verified", "rejected"] = "pending"
+    dispute_status: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     reviewed_at: Optional[datetime] = None
     reviewed_by: Optional[str] = None
@@ -62,16 +66,20 @@ class ReportInDB(ReportCreate):
 
 class ReportOut(BaseModel):
     id: str
+    entity_type: str = "person"
     name: Optional[str] = None
     phone: Optional[str] = None
     bank_account: Optional[str] = None
     bank_name: Optional[str] = None
     id_number: Optional[str] = None
+    registration_number: Optional[str] = None
+    website: Optional[str] = None
     amount_lost: Optional[float] = None
     description: str
     category: str
     status: str
     source: str
+    dispute_status: Optional[str] = None
     created_at: datetime
 
 
@@ -83,3 +91,15 @@ class StatusUpdate(BaseModel):
 class SearchQuery(BaseModel):
     q: str
     field: Optional[Literal["phone", "bank_account", "id_number", "name", "all"]] = "all"
+
+
+class DisputeCreate(BaseModel):
+    name: str
+    email: str
+    id_number: str
+    reason: str
+    evidence_notes: Optional[str] = None
+
+
+class DisputeAction(BaseModel):
+    action: Literal["uphold", "dismiss"]

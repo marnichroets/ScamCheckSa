@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 
@@ -79,10 +79,16 @@ function InfoRow({ label, value, mono = true, accent }) {
 export default function ScammerProfilePage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [report, setReport]   = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
-  const [copied, setCopied]   = useState(false);
+  const [report, setReport]       = useState(null);
+  const [loading, setLoading]     = useState(true);
+  const [notFound, setNotFound]   = useState(false);
+  const [copied, setCopied]       = useState(false);
+  const [disputeOpen, setDisputeOpen] = useState(false);
+  const [disputeForm, setDisputeForm] = useState({ name: '', email: '', id_number: '', reason: '', evidence_notes: '' });
+  const [disputeLoading, setDisputeLoading] = useState(false);
+  const [disputeSubmitted, setDisputeSubmitted] = useState(false);
+  const [disputeError, setDisputeError] = useState('');
+  const disputeRef = useRef(null);
 
   useEffect(() => {
     api.get(`/reports/${id}`)
@@ -96,6 +102,31 @@ export default function ScammerProfilePage() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
+  };
+
+  const setDField = (field) => (e) => setDisputeForm(f => ({ ...f, [field]: e.target.value }));
+
+  const handleDisputeSubmit = async (e) => {
+    e.preventDefault();
+    if (!disputeForm.name || !disputeForm.email || !disputeForm.id_number || !disputeForm.reason) {
+      setDisputeError('Please fill in all required fields.');
+      return;
+    }
+    setDisputeLoading(true);
+    setDisputeError('');
+    try {
+      await api.post(`/reports/${id}/dispute`, disputeForm);
+      setDisputeSubmitted(true);
+    } catch (err) {
+      setDisputeError(err.response?.data?.detail || 'Submission failed. Please try again.');
+    } finally {
+      setDisputeLoading(false);
+    }
+  };
+
+  const openDispute = () => {
+    setDisputeOpen(true);
+    setTimeout(() => disputeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   };
 
   if (loading) return (
@@ -170,6 +201,11 @@ export default function ScammerProfilePage() {
                 <span style={{ fontSize: '0.75rem', fontWeight: 700, color: risk.color, background: risk.bg, border: `1px solid ${risk.border}`, borderRadius: '999px', padding: '0.25rem 0.75rem' }}>
                   {risk.label}
                 </span>
+                {report.dispute_status === 'under_review' && (
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#E8A01A', background: 'rgba(232,160,26,0.1)', border: '1px solid rgba(232,160,26,0.3)', borderRadius: '999px', padding: '0.25rem 0.75rem' }}>
+                    ⚠️ Under Review
+                  </span>
+                )}
               </div>
               <div style={{ color: '#475569', fontSize: '0.82rem' }}>
                 Reported {new Date(report.created_at).toLocaleDateString('en-ZA', { year: 'numeric', month: 'long', day: 'numeric' })}
@@ -208,13 +244,18 @@ export default function ScammerProfilePage() {
         </div>
 
         {/* ── IDENTIFIERS ── */}
-        {hasIdentifiers && (
+        {(hasIdentifiers || report.registration_number || report.website) && (
           <div style={{ background: '#0D1117', border: '1px solid #1C2636', borderRadius: '16px', padding: '1.75rem', marginBottom: '1rem' }}>
             <SectionTitle>🔎 Identifiers</SectionTitle>
-            <InfoRow label="Phone"        value={report.phone} />
-            <InfoRow label="Bank account" value={report.bank_account} />
-            <InfoRow label="Bank name"    value={report.bank_name} mono={false} />
-            <InfoRow label="SA ID number" value={report.id_number} />
+            <InfoRow label="Phone"               value={report.phone} />
+            <InfoRow label="Bank account"        value={report.bank_account} />
+            <InfoRow label="Bank name"           value={report.bank_name} mono={false} />
+            <InfoRow label="SA ID number"        value={report.id_number} />
+            <InfoRow label="Reg. number"         value={report.registration_number} />
+            <InfoRow label="Website"             value={report.website} mono={false} />
+            <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid #1C2636', color: '#475569', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              🔒 Sensitive details are masked to protect privacy
+            </div>
           </div>
         )}
 
@@ -250,7 +291,7 @@ export default function ScammerProfilePage() {
         </div>
 
         {/* ── ACTIONS ── */}
-        <div style={{ background: '#0D1117', border: '1px solid #1C2636', borderRadius: '16px', padding: '1.75rem' }}>
+        <div style={{ background: '#0D1117', border: '1px solid #1C2636', borderRadius: '16px', padding: '1.75rem', marginBottom: '1rem' }}>
           <SectionTitle>🛠️ Actions</SectionTitle>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             <Link
@@ -274,6 +315,103 @@ export default function ScammerProfilePage() {
               Report to SAPS ↗
             </a>
           </div>
+        </div>
+
+        {/* ── DISCLAIMER ── */}
+        <div style={{ background: '#0D1117', border: '1px solid #1C2636', borderRadius: '14px', padding: '1.25rem 1.5rem', marginBottom: '1rem', fontSize: '0.8rem', color: '#64748B', lineHeight: 1.65 }}>
+          <span style={{ fontWeight: 700, color: '#94A3B8' }}>ℹ️ About this report: </span>
+          This report was submitted by a member of the public and reviewed by ScamCheckSA. If you believe this report is incorrect, you can dispute it below.
+        </div>
+
+        {/* ── DISPUTE ── */}
+        <div ref={disputeRef} style={{ background: '#0D1117', border: '1px solid #1C2636', borderRadius: '16px', padding: '1.75rem' }}>
+          <SectionTitle>🚨 Dispute This Report</SectionTitle>
+          {!disputeOpen && !disputeSubmitted && (
+            <div>
+              <p style={{ color: '#64748B', fontSize: '0.85rem', lineHeight: 1.65, marginBottom: '1rem' }}>
+                If you believe this report is inaccurate or refers to you unfairly, you can submit a formal dispute. Our team will investigate within 3–5 business days.
+              </p>
+              <button
+                onClick={openDispute}
+                style={{ padding: '0.7rem 1.4rem', background: 'transparent', border: '1px solid #E8A01A', borderRadius: '10px', color: '#E8A01A', fontWeight: 700, cursor: 'pointer', fontSize: '0.875rem' }}
+              >
+                Dispute This Report
+              </button>
+            </div>
+          )}
+          {disputeSubmitted && (
+            <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
+              <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>✅</div>
+              <div style={{ color: '#22C55E', fontWeight: 700, marginBottom: '0.5rem' }}>Dispute submitted</div>
+              <p style={{ color: '#64748B', fontSize: '0.85rem', lineHeight: 1.65 }}>
+                Thank you. Our team will review your dispute and contact you via email within 3–5 business days.
+              </p>
+            </div>
+          )}
+          {disputeOpen && !disputeSubmitted && (
+            <form onSubmit={handleDisputeSubmit}>
+              <p style={{ color: '#64748B', fontSize: '0.85rem', lineHeight: 1.65, marginBottom: '1.25rem' }}>
+                Complete the form below. Your ID number is used to verify your identity and will not be shared publicly.
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0 1rem' }}>
+                {[
+                  { label: 'Full name', field: 'name', placeholder: 'Your full name', type: 'text' },
+                  { label: 'Email address', field: 'email', placeholder: 'you@example.com', type: 'email' },
+                  { label: 'SA ID number', field: 'id_number', placeholder: '13-digit ID number', type: 'text' },
+                ].map(({ label, field, placeholder, type }) => (
+                  <div key={field} style={{ marginBottom: '1rem' }}>
+                    <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.4rem' }}>{label}</label>
+                    <input
+                      type={type}
+                      value={disputeForm[field]}
+                      onChange={setDField(field)}
+                      placeholder={placeholder}
+                      style={{ width: '100%', padding: '0.8rem 1rem', background: '#12161F', border: '1px solid #1C2636', borderRadius: '10px', color: '#E2E8F0', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }}
+                      required
+                    />
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.4rem' }}>Reason for dispute</label>
+                <textarea
+                  value={disputeForm.reason}
+                  onChange={setDField('reason')}
+                  placeholder="Explain why this report is incorrect, misleading, or should be removed..."
+                  required
+                  style={{ width: '100%', padding: '0.8rem 1rem', background: '#12161F', border: '1px solid #1C2636', borderRadius: '10px', color: '#E2E8F0', fontSize: '0.9rem', outline: 'none', resize: 'vertical', minHeight: '100px', fontFamily: 'inherit', lineHeight: 1.6, boxSizing: 'border-box' }}
+                />
+              </div>
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', color: '#94A3B8', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.4rem' }}>Supporting evidence <span style={{ color: '#475569', fontWeight: 400, textTransform: 'none' }}>optional</span></label>
+                <textarea
+                  value={disputeForm.evidence_notes}
+                  onChange={setDField('evidence_notes')}
+                  placeholder="Any additional context, links, or documentation to support your dispute..."
+                  style={{ width: '100%', padding: '0.8rem 1rem', background: '#12161F', border: '1px solid #1C2636', borderRadius: '10px', color: '#E2E8F0', fontSize: '0.9rem', outline: 'none', resize: 'vertical', minHeight: '80px', fontFamily: 'inherit', lineHeight: 1.6, boxSizing: 'border-box' }}
+                />
+              </div>
+              {disputeError && (
+                <div style={{ background: '#1a0a0a', border: '1px solid #5a1a1a', color: '#EF5350', borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.875rem' }}>{disputeError}</div>
+              )}
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <button
+                  type="submit"
+                  disabled={disputeLoading}
+                  style={{ padding: '0.75rem 1.5rem', background: '#E8A01A', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.875rem' }}
+                >
+                  {disputeLoading ? 'Submitting...' : 'Submit Dispute'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDisputeOpen(false)}
+                  style={{ padding: '0.75rem 1.5rem', background: 'transparent', border: '1px solid #1C2636', borderRadius: '10px', color: '#64748B', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       </div>
     </div>

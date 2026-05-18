@@ -58,10 +58,12 @@ export default function ReportPage() {
   const [loading,     setLoading]     = useState(false);
   const [submitted,   setSubmitted]   = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [entityType,  setEntityType]  = useState('person');
 
   const [form, setForm] = useState({
     name: '', phone: '', bank_account: '', bank_name: '',
-    id_number: '', category: 'other', amount_lost: '',
+    id_number: '', registration_number: '', website: '',
+    category: 'other', amount_lost: '',
     description: '', evidence_notes: '',
   });
 
@@ -71,9 +73,17 @@ export default function ReportPage() {
   };
 
   const validateStep = (s) => {
-    if (s === 1 && !form.name && !form.phone && !form.bank_account && !form.id_number) {
-      setStepError('Please provide at least one identifier: name, phone number, bank account or ID number.');
-      return false;
+    if (s === 1) {
+      const hasPerson = form.name || form.phone || form.bank_account || form.id_number;
+      const hasBusiness = form.name || form.phone || form.bank_account || form.registration_number;
+      if (entityType === 'person' && !hasPerson) {
+        setStepError('Please provide at least one identifier: name, phone number, bank account or ID number.');
+        return false;
+      }
+      if (entityType === 'business' && !hasBusiness) {
+        setStepError('Please provide at least one identifier: business name, phone, bank account or registration number.');
+        return false;
+      }
     }
     if (s === 2 && !form.description.trim()) {
       setStepError('Please describe the scam. This helps our team verify the report.');
@@ -117,13 +127,15 @@ export default function ReportPage() {
     setLoading(true);
     setSubmitError('');
     try {
-      const payload = { ...form };
+      const payload = { ...form, entity_type: entityType };
       if (form.evidence_notes.trim()) {
         payload.description = `${form.description}\n\nEvidence: ${form.evidence_notes}`;
       }
       if (payload.amount_lost) payload.amount_lost = parseFloat(payload.amount_lost);
       else delete payload.amount_lost;
       delete payload.evidence_notes;
+      if (!payload.registration_number) delete payload.registration_number;
+      if (!payload.website) delete payload.website;
 
       await api.post('/reports/', payload);
       setSubmitted(true);
@@ -136,9 +148,10 @@ export default function ReportPage() {
   };
 
   const resetForm = () => {
-    setForm({ name: '', phone: '', bank_account: '', bank_name: '', id_number: '', category: 'other', amount_lost: '', description: '', evidence_notes: '' });
+    setForm({ name: '', phone: '', bank_account: '', bank_name: '', id_number: '', registration_number: '', website: '', category: 'other', amount_lost: '', description: '', evidence_notes: '' });
     setFiles([]);
     setPopiChecked(false);
+    setEntityType('person');
     setStep(1);
     setSubmitted(false);
     setSubmitError('');
@@ -228,29 +241,85 @@ export default function ReportPage() {
           {/* ── STEP 1: Scammer Details ── */}
           {step === 1 && (
             <div>
+              {/* Person / Business toggle */}
+              <div style={{ marginBottom: '1.5rem' }}>
+                <div style={{ color: '#94A3B8', fontSize: '0.82rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.6rem' }}>
+                  Reporting a Person or Business?
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  {['person', 'business'].map(t => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => { setEntityType(t); setStepError(''); }}
+                      style={{
+                        padding: '0.5rem 1.25rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600,
+                        background: entityType === t ? '#1a3c6e' : '#12161F',
+                        border: `2px solid ${entityType === t ? '#1a3c6e' : '#1C2636'}`,
+                        color: entityType === t ? '#fff' : '#64748B',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {t === 'person' ? '👤 Person' : '🏢 Business'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <p style={{ color: '#64748B', fontSize: '0.85rem', marginBottom: '1.5rem', lineHeight: 1.6 }}>
                 Provide as many identifiers as possible. At least one is required.
               </p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0 1rem' }}>
-                <Field label="Full name" optional>
-                  <input className="wiz-input" style={INPUT} value={form.name} onChange={set('name')} placeholder="e.g. John Doe" />
-                </Field>
-                <Field label="Phone number" optional>
-                  <input className="wiz-input" style={INPUT} value={form.phone} onChange={set('phone')} placeholder="e.g. 0821234567" />
-                </Field>
-                <Field label="Bank account" optional>
-                  <input className="wiz-input" style={INPUT} value={form.bank_account} onChange={set('bank_account')} placeholder="Account number" />
-                </Field>
-                <Field label="Bank name" optional>
-                  <select className="wiz-input" style={{ ...INPUT, cursor: 'pointer' }} value={form.bank_name} onChange={set('bank_name')}>
-                    <option value="">Select bank...</option>
-                    {BANKS.map(b => <option key={b} value={b}>{b}</option>)}
-                  </select>
-                </Field>
-              </div>
-              <Field label="SA ID number" optional>
-                <input className="wiz-input" style={INPUT} value={form.id_number} onChange={set('id_number')} placeholder="13-digit ID number" maxLength={13} />
-              </Field>
+
+              {entityType === 'person' ? (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0 1rem' }}>
+                    <Field label="Full name" optional>
+                      <input className="wiz-input" style={INPUT} value={form.name} onChange={set('name')} placeholder="e.g. John Doe" />
+                    </Field>
+                    <Field label="Phone number" optional>
+                      <input className="wiz-input" style={INPUT} value={form.phone} onChange={set('phone')} placeholder="e.g. 0821234567" />
+                    </Field>
+                    <Field label="Bank account" optional>
+                      <input className="wiz-input" style={INPUT} value={form.bank_account} onChange={set('bank_account')} placeholder="Account number" />
+                    </Field>
+                    <Field label="Bank name" optional>
+                      <select className="wiz-input" style={{ ...INPUT, cursor: 'pointer' }} value={form.bank_name} onChange={set('bank_name')}>
+                        <option value="">Select bank...</option>
+                        {BANKS.map(b => <option key={b} value={b}>{b}</option>)}
+                      </select>
+                    </Field>
+                  </div>
+                  <Field label="SA ID number" optional>
+                    <input className="wiz-input" style={INPUT} value={form.id_number} onChange={set('id_number')} placeholder="13-digit ID number" maxLength={13} />
+                  </Field>
+                </>
+              ) : (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0 1rem' }}>
+                    <Field label="Business name" optional>
+                      <input className="wiz-input" style={INPUT} value={form.name} onChange={set('name')} placeholder="e.g. ABC Trading CC" />
+                    </Field>
+                    <Field label="Registration number" optional>
+                      <input className="wiz-input" style={INPUT} value={form.registration_number} onChange={set('registration_number')} placeholder="e.g. 2021/123456/07" />
+                    </Field>
+                    <Field label="Phone number" optional>
+                      <input className="wiz-input" style={INPUT} value={form.phone} onChange={set('phone')} placeholder="e.g. 0821234567" />
+                    </Field>
+                    <Field label="Bank account" optional>
+                      <input className="wiz-input" style={INPUT} value={form.bank_account} onChange={set('bank_account')} placeholder="Account number" />
+                    </Field>
+                    <Field label="Bank name" optional>
+                      <select className="wiz-input" style={{ ...INPUT, cursor: 'pointer' }} value={form.bank_name} onChange={set('bank_name')}>
+                        <option value="">Select bank...</option>
+                        {BANKS.map(b => <option key={b} value={b}>{b}</option>)}
+                      </select>
+                    </Field>
+                    <Field label="Website URL" optional>
+                      <input className="wiz-input" style={INPUT} value={form.website} onChange={set('website')} placeholder="e.g. https://example.co.za" />
+                    </Field>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
