@@ -33,9 +33,8 @@ function Navbar() {
       <style>{`
         .nav-link { transition: color 0.15s; }
         .nav-link:hover { color: #E2E8F0 !important; }
-        .report-btn:hover { background: #c62828 !important; }
+        .report-btn:hover { background: #1b5e20 !important; }
         .report-btn { transition: background 0.15s; }
-        .logo-span { color: #E53935; }
       `}</style>
       <nav style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -46,17 +45,15 @@ function Navbar() {
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
       }}>
-        <Link to="/" onClick={close} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ fontWeight: 900, fontSize: '1.2rem', color: '#E2E8F0', letterSpacing: '-0.5px' }}>
-            ScamCheck<span className="logo-span">SA</span>
-          </span>
+        <Link to="/" onClick={close} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+          <img src="/logo.png" alt="ScamCheckSA" style={{ height: '38px', width: 'auto' }} />
         </Link>
 
         {isMobile ? (
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <Link to="/report" onClick={close} className="report-btn" style={{
-                background: '#E53935', color: '#fff', fontWeight: 700, fontSize: '0.8rem',
+                background: '#2e7d32', color: '#fff', fontWeight: 700, fontSize: '0.8rem',
                 padding: '0.4rem 0.9rem', borderRadius: '8px', textDecoration: 'none',
               }}>
                 Report
@@ -115,7 +112,7 @@ function Navbar() {
               </Link>
             ))}
             <Link to="/report" className="report-btn" style={{
-              background: '#E53935', color: '#fff', fontWeight: 700, fontSize: '0.875rem',
+              background: '#2e7d32', color: '#fff', fontWeight: 700, fontSize: '0.875rem',
               padding: '0.45rem 1rem', borderRadius: '8px', textDecoration: 'none',
               marginLeft: '0.25rem',
             }}>

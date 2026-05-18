@@ -26,7 +26,7 @@ const CAT_FILTERS = [
 const CAT_COLORS = {
   romance:    '#E53935',
   investment: '#E8A01A',
-  phishing:   '#1a73e8',
+  phishing:   '#1a3c6e',
   shopping:   '#22C55E',
   job:        '#A855F7',
   other:      '#64748B',
@@ -69,7 +69,7 @@ function ReportCard({ report }) {
       onMouseLeave={() => setHovered(false)}
       style={{
         background: '#0D1117',
-        border: `1px solid ${hovered ? '#E53935' : '#1C2636'}`,
+        border: `1px solid ${hovered ? '#2e7d32' : '#1C2636'}`,
         borderRadius: '14px',
         padding: '1.5rem',
         cursor: 'pointer',
@@ -208,8 +208,8 @@ export default function ResultsPage() {
       onClick={onClick}
       style={{
         padding: '0.35rem 0.85rem', borderRadius: '999px',
-        background: active ? '#E53935' : '#0D1117',
-        border: `1px solid ${active ? '#E53935' : '#1C2636'}`,
+        background: active ? '#2e7d32' : '#0D1117',
+        border: `1px solid ${active ? '#2e7d32' : '#1C2636'}`,
         color: active ? '#fff' : '#64748B',
         fontSize: '0.78rem', fontWeight: active ? 700 : 400,
         cursor: 'pointer', whiteSpace: 'nowrap',
@@ -244,7 +244,7 @@ export default function ResultsPage() {
           </select>
           <button
             type="submit"
-            style={{ padding: '0 1.25rem', background: '#E53935', border: 'none', color: '#fff', fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer' }}
+            style={{ padding: '0 1.25rem', background: '#2e7d32', border: 'none', color: '#fff', fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer' }}
           >
             Search
           </button>
@@ -300,7 +300,7 @@ export default function ResultsPage() {
         {/* Loading */}
         {loading && (
           <div style={{ textAlign: 'center', padding: '5rem 2rem' }}>
-            <div style={{ width: 44, height: 44, border: '3px solid #1C2636', borderTopColor: '#E53935', borderRadius: '50%', margin: '0 auto 1rem', animation: 'spin 0.8s linear infinite' }} />
+            <div style={{ width: 44, height: 44, border: '3px solid #1C2636', borderTopColor: '#2e7d32', borderRadius: '50%', margin: '0 auto 1rem', animation: 'spin 0.8s linear infinite' }} />
             <div style={{ color: '#64748B', fontSize: '0.9rem' }}>Searching database...</div>
           </div>
         )}
@@ -328,7 +328,7 @@ export default function ResultsPage() {
               }
             </p>
             {results.length === 0 && (
-              <Link to="/report" style={{ display: 'inline-block', padding: '0.75rem 1.75rem', background: '#E53935', color: '#fff', fontWeight: 700, borderRadius: '10px', textDecoration: 'none', fontSize: '0.875rem' }}>
+              <Link to="/report" style={{ display: 'inline-block', padding: '0.75rem 1.75rem', background: '#2e7d32', color: '#fff', fontWeight: 700, borderRadius: '10px', textDecoration: 'none', fontSize: '0.875rem' }}>
                 Submit a Report
               </Link>
             )}

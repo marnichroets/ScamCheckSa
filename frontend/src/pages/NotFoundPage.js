@@ -9,7 +9,7 @@ export default function NotFoundPage() {
       <p style={{ color: '#6b7280', fontSize: '1rem', marginBottom: '2rem', maxWidth: '400px', lineHeight: 1.6 }}>
         The page you're looking for doesn't exist. It may have been moved or the URL might be incorrect.
       </p>
-      <Link to="/" style={{ padding: '0.85rem 2rem', background: '#1a73e8', borderRadius: '8px', color: '#fff', fontWeight: 600, textDecoration: 'none', fontSize: '0.95rem' }}>
+      <Link to="/" style={{ padding: '0.85rem 2rem', background: '#1a3c6e', borderRadius: '8px', color: '#fff', fontWeight: 600, textDecoration: 'none', fontSize: '0.95rem' }}>
         Back to search
       </Link>
     </div>

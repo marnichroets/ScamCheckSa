@@ -12,7 +12,7 @@ const STEPS = [
 const CAT_OPTIONS = [
   { value: 'romance',    label: 'Romance',    icon: '💔', color: '#E53935' },
   { value: 'investment', label: 'Investment', icon: '📈', color: '#E8A01A' },
-  { value: 'phishing',   label: 'Phishing',   icon: '🎣', color: '#1a73e8' },
+  { value: 'phishing',   label: 'Phishing',   icon: '🎣', color: '#1a3c6e' },
   { value: 'shopping',   label: 'Shopping',   icon: '🛒', color: '#22C55E' },
   { value: 'job',        label: 'Job',        icon: '💼', color: '#A855F7' },
   { value: 'other',      label: 'Other',      icon: '⚠️', color: '#64748B' },
@@ -161,7 +161,7 @@ export default function ReportPage() {
             <button onClick={resetForm} style={{ padding: '0.8rem 1.5rem', background: '#1C2636', border: 'none', borderRadius: '10px', color: '#E2E8F0', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>
               Submit Another
             </button>
-            <button onClick={() => navigate('/')} style={{ padding: '0.8rem 1.5rem', background: '#E53935', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem' }}>
+            <button onClick={() => navigate('/')} style={{ padding: '0.8rem 1.5rem', background: '#2e7d32', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem' }}>
               Back to Search
             </button>
           </div>
@@ -173,7 +173,7 @@ export default function ReportPage() {
   return (
     <div style={{ minHeight: 'calc(100vh - 64px)', background: '#080B10', padding: '2.5rem 1rem 4rem' }}>
       <style>{`
-        .wiz-input:focus { border-color: #1a73e8 !important; }
+        .wiz-input:focus { border-color: #1a3c6e !important; }
         .cat-opt:hover { border-color: #1C2636; background: #12161F !important; }
       `}</style>
       <div style={{ maxWidth: '680px', margin: '0 auto' }}>
@@ -191,8 +191,8 @@ export default function ReportPage() {
               <div key={s.num} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem', flex: 1 }}>
                 <div style={{
                   width: 36, height: 36, borderRadius: '50%',
-                  background: step > s.num ? '#22C55E' : step === s.num ? '#E53935' : '#12161F',
-                  border: `2px solid ${step > s.num ? '#22C55E' : step === s.num ? '#E53935' : '#1C2636'}`,
+                  background: step > s.num ? '#22C55E' : step === s.num ? '#2e7d32' : '#12161F',
+                  border: `2px solid ${step > s.num ? '#22C55E' : step === s.num ? '#2e7d32' : '#1C2636'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: step > s.num ? '0.9rem' : '0.8rem',
                   fontWeight: 700, color: step >= s.num ? '#fff' : '#475569',
@@ -209,7 +209,7 @@ export default function ReportPage() {
             ))}
           </div>
           <div style={{ height: '4px', background: '#1C2636', borderRadius: '2px', overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${progress}%`, background: 'linear-gradient(90deg, #E53935, #FF7043)', borderRadius: '2px', transition: 'width 0.35s ease' }} />
+            <div style={{ height: '100%', width: `${progress}%`, background: 'linear-gradient(90deg, #1a3c6e, #2e7d32)', borderRadius: '2px', transition: 'width 0.35s ease' }} />
           </div>
         </div>
 
@@ -220,7 +220,7 @@ export default function ReportPage() {
               {STEPS[step - 1].icon}
             </div>
             <div>
-              <div style={{ color: '#E53935', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>Step {step} of 4</div>
+              <div style={{ color: '#2e7d32', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>Step {step} of 4</div>
               <div style={{ color: '#E2E8F0', fontSize: '1.1rem', fontWeight: 700 }}>{STEPS[step - 1].label}</div>
             </div>
           </div>
@@ -307,12 +307,12 @@ export default function ReportPage() {
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
                 style={{
-                  border: `2px dashed ${dragging ? '#E53935' : '#1C2636'}`,
+                  border: `2px dashed ${dragging ? '#2e7d32' : '#1C2636'}`,
                   borderRadius: '12px',
                   padding: '2.5rem 1.5rem',
                   textAlign: 'center',
                   cursor: 'pointer',
-                  background: dragging ? 'rgba(229,57,53,0.04)' : '#12161F',
+                  background: dragging ? 'rgba(46,125,50,0.04)' : '#12161F',
                   transition: 'all 0.2s',
                   marginBottom: '1.25rem',
                 }}
@@ -340,7 +340,7 @@ export default function ReportPage() {
                 </div>
               )}
 
-              <div style={{ background: 'rgba(26,115,232,0.06)', border: '1px solid rgba(26,115,232,0.2)', borderRadius: '10px', padding: '0.9rem 1rem', marginBottom: '1.25rem', display: 'flex', gap: '0.6rem', alignItems: 'flex-start' }}>
+              <div style={{ background: 'rgba(26,60,110,0.06)', border: '1px solid rgba(26,60,110,0.2)', borderRadius: '10px', padding: '0.9rem 1rem', marginBottom: '1.25rem', display: 'flex', gap: '0.6rem', alignItems: 'flex-start' }}>
                 <span style={{ fontSize: '1rem', flexShrink: 0 }}>💡</span>
                 <p style={{ color: '#64748B', fontSize: '0.8rem', lineHeight: 1.6, margin: 0 }}>
                   Screenshot notes and uploads are attached to your report for admin review.
@@ -395,13 +395,13 @@ export default function ReportPage() {
               </div>
 
               {/* POPIA */}
-              <div style={{ background: 'rgba(26,115,232,0.04)', border: '1px solid #1C2636', borderRadius: '12px', padding: '1.25rem', marginBottom: '1.25rem' }}>
+              <div style={{ background: 'rgba(26,60,110,0.04)', border: '1px solid #1C2636', borderRadius: '12px', padding: '1.25rem', marginBottom: '1.25rem' }}>
                 <label style={{ display: 'flex', gap: '0.85rem', alignItems: 'flex-start', cursor: 'pointer' }}>
                   <input
                     type="checkbox"
                     checked={popiChecked}
                     onChange={e => setPopiChecked(e.target.checked)}
-                    style={{ width: 18, height: 18, marginTop: '2px', accentColor: '#E53935', flexShrink: 0, cursor: 'pointer' }}
+                    style={{ width: 18, height: 18, marginTop: '2px', accentColor: '#2e7d32', flexShrink: 0, cursor: 'pointer' }}
                   />
                   <span style={{ color: '#94A3B8', fontSize: '0.82rem', lineHeight: 1.65 }}>
                     I confirm this is a genuine scam incident and the information provided is accurate to the best of my knowledge.
@@ -421,7 +421,7 @@ export default function ReportPage() {
                 onClick={handleSubmit}
                 disabled={loading || !popiChecked}
                 style={{
-                  width: '100%', padding: '1rem', background: popiChecked ? '#E53935' : '#1C2636',
+                  width: '100%', padding: '1rem', background: popiChecked ? '#2e7d32' : '#1C2636',
                   border: 'none', borderRadius: '10px', color: popiChecked ? '#fff' : '#475569',
                   fontWeight: 800, fontSize: '1rem', cursor: popiChecked ? 'pointer' : 'not-allowed',
                   transition: 'background 0.2s, color 0.2s',
@@ -443,11 +443,11 @@ export default function ReportPage() {
                 ← Back
               </button>
               {stepError && (
-                <div style={{ color: '#E53935', fontSize: '0.8rem', textAlign: 'center', flex: 1, margin: '0 1rem' }}>{stepError}</div>
+                <div style={{ color: '#ef5350', fontSize: '0.8rem', textAlign: 'center', flex: 1, margin: '0 1rem' }}>{stepError}</div>
               )}
               <button
                 onClick={nextStep}
-                style={{ padding: '0.75rem 1.75rem', background: '#E53935', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.875rem' }}
+                style={{ padding: '0.75rem 1.75rem', background: '#2e7d32', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.875rem' }}
               >
                 Next →
               </button>

@@ -10,7 +10,7 @@ const s = {
   title: { color: '#fff', fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' },
   sub: { color: '#6b7280', marginBottom: '1.5rem', lineHeight: 1.6, maxWidth: '400px' },
   btn: {
-    padding: '0.75rem 1.5rem', background: '#1a73e8', border: 'none',
+    padding: '0.75rem 1.5rem', background: '#1a3c6e', border: 'none',
     borderRadius: '8px', color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.95rem',
   },
 };

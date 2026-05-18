@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 
 const CAT_COLORS = {
-  romance: '#E53935', investment: '#E8A01A', phishing: '#1a73e8',
+  romance: '#E53935', investment: '#E8A01A', phishing: '#1a3c6e',
   shopping: '#22C55E', job: '#A855F7', other: '#64748B',
 };
 
@@ -101,7 +101,7 @@ export default function ScammerProfilePage() {
   if (loading) return (
     <div style={{ minHeight: 'calc(100vh - 64px)', background: '#080B10', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div>
-        <div style={{ width: 44, height: 44, border: '3px solid #1C2636', borderTopColor: '#E53935', borderRadius: '50%', margin: '0 auto 1rem', animation: 'spin 0.8s linear infinite' }} />
+        <div style={{ width: 44, height: 44, border: '3px solid #1C2636', borderTopColor: '#2e7d32', borderRadius: '50%', margin: '0 auto 1rem', animation: 'spin 0.8s linear infinite' }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         <div style={{ color: '#64748B', fontSize: '0.9rem' }}>Loading report...</div>
       </div>
@@ -116,7 +116,7 @@ export default function ScammerProfilePage() {
         <p style={{ color: '#64748B', marginBottom: '1.5rem', lineHeight: 1.6 }}>
           This report may not exist, may be under review, or may have been removed.
         </p>
-        <Link to="/" style={{ display: 'inline-block', padding: '0.8rem 2rem', background: '#E53935', color: '#fff', fontWeight: 700, borderRadius: '10px', textDecoration: 'none' }}>
+        <Link to="/" style={{ display: 'inline-block', padding: '0.8rem 2rem', background: '#2e7d32', color: '#fff', fontWeight: 700, borderRadius: '10px', textDecoration: 'none' }}>
           Back to Search
         </Link>
       </div>
@@ -255,7 +255,7 @@ export default function ScammerProfilePage() {
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             <Link
               to="/report"
-              style={{ padding: '0.75rem 1.4rem', background: '#E53935', borderRadius: '10px', color: '#fff', fontWeight: 700, textDecoration: 'none', fontSize: '0.875rem', display: 'inline-block' }}
+              style={{ padding: '0.75rem 1.4rem', background: '#2e7d32', borderRadius: '10px', color: '#fff', fontWeight: 700, textDecoration: 'none', fontSize: '0.875rem', display: 'inline-block' }}
             >
               + Report this scammer too
             </Link>

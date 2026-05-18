@@ -37,7 +37,7 @@ const s = {
   btn: {
     width: '100%',
     padding: '0.9rem',
-    background: '#1a73e8',
+    background: '#1a3c6e',
     border: 'none',
     borderRadius: '8px',
     color: '#fff',
@@ -77,7 +77,7 @@ const s = {
     color: '#6b7280',
     fontSize: '0.875rem',
   },
-  registerLink: { color: '#1a73e8', textDecoration: 'none', fontWeight: 500 },
+  registerLink: { color: '#1a3c6e', textDecoration: 'none', fontWeight: 500 },
   error: {
     background: '#2a1a1a',
     border: '1px solid #5a2d2d',

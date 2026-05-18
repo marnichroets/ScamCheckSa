@@ -5,7 +5,7 @@ import api from '../api';
 const CATEGORIES = [
   { value: 'romance',    label: 'Romance',    icon: '💔', color: '#E53935', desc: 'Dating & relationship scams' },
   { value: 'investment', label: 'Investment', icon: '📈', color: '#E8A01A', desc: 'Ponzi & investment fraud' },
-  { value: 'phishing',   label: 'Phishing',   icon: '🎣', color: '#1a73e8', desc: 'Email, SMS & link fraud' },
+  { value: 'phishing',   label: 'Phishing',   icon: '🎣', color: '#1a3c6e', desc: 'Email, SMS & link fraud' },
   { value: 'shopping',   label: 'Shopping',   icon: '🛒', color: '#22C55E', desc: 'Online marketplace scams' },
   { value: 'job',        label: 'Jobs',       icon: '💼', color: '#A855F7', desc: 'Employment & salary fraud' },
   { value: 'other',      label: 'Other',      icon: '⚠️', color: '#64748B', desc: 'All other scam types' },
@@ -94,8 +94,8 @@ export default function HomePage() {
         .cat-card { transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; cursor: pointer; }
         .cat-card:hover { transform: translateY(-3px) !important; box-shadow: 0 12px 32px rgba(0,0,0,0.4) !important; }
         .how-card { transition: border-color 0.18s ease; }
-        .how-card:hover { border-color: #1a73e8 !important; }
-        .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(229,57,53,0.45) !important; }
+        .how-card:hover { border-color: #1a3c6e !important; }
+        .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(46,125,50,0.45) !important; }
         .cta-btn { transition: transform 0.18s ease, box-shadow 0.18s ease; }
         .search-pill { transition: background 0.15s, color 0.15s; }
         .search-pill:hover { color: #E2E8F0 !important; }
@@ -113,7 +113,7 @@ export default function HomePage() {
         {/* Headline */}
         <h1 className="hero-el" style={{ fontSize: 'clamp(2.4rem, 7vw, 4.2rem)', fontWeight: 900, color: '#fff', lineHeight: 1.08, letterSpacing: '-1.5px', marginBottom: '1.25rem', animationDelay: '0.07s' }}>
           Is This Person a{' '}
-          <span style={{ background: 'linear-gradient(135deg, #E53935 30%, #FF7043 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+          <span style={{ background: 'linear-gradient(135deg, #1a3c6e 30%, #2e7d32 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
             Scammer?
           </span>
         </h1>
@@ -128,7 +128,7 @@ export default function HomePage() {
           <form
             onSubmit={handleSearch}
             style={{ display: 'flex', background: '#0D1117', border: '2px solid #1C2636', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.5)', transition: 'border-color 0.2s' }}
-            onFocus={e => e.currentTarget.style.borderColor = '#E53935'}
+            onFocus={e => e.currentTarget.style.borderColor = '#2e7d32'}
             onBlur={e => e.currentTarget.style.borderColor = '#1C2636'}
           >
             <input
@@ -147,9 +147,9 @@ export default function HomePage() {
             </select>
             <button
               type="submit"
-              style={{ padding: '0 2rem', background: '#E53935', border: 'none', color: '#fff', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer', letterSpacing: '0.3px', flexShrink: 0, transition: 'background 0.15s' }}
-              onMouseEnter={e => e.currentTarget.style.background = '#c62828'}
-              onMouseLeave={e => e.currentTarget.style.background = '#E53935'}
+              style={{ padding: '0 2rem', background: '#2e7d32', border: 'none', color: '#fff', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer', letterSpacing: '0.3px', flexShrink: 0, transition: 'background 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.background = '#1b5e20'}
+              onMouseLeave={e => e.currentTarget.style.background = '#2e7d32'}
             >
               Search
             </button>
@@ -177,7 +177,7 @@ export default function HomePage() {
           <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', gap: '0', padding: '0' }}>
             {[
               { num: display.total.toLocaleString() + '+', label: 'Reports Submitted', color: '#fff' },
-              { num: display.verified.toLocaleString() + '+', label: 'Verified Scammers', color: '#E53935' },
+              { num: display.verified.toLocaleString() + '+', label: 'Verified Scammers', color: '#2e7d32' },
               { num: fmtAmount(display.amount), label: 'Total Losses Tracked', color: '#E8A01A' },
             ].map((s, i) => (
               <div key={i} style={{ textAlign: 'center', padding: '1.75rem 2rem', borderRight: i < 2 ? '1px solid #1C2636' : 'none', flex: 1, minWidth: '140px' }}>
@@ -263,7 +263,7 @@ export default function HomePage() {
 
       {/* ── CTA ── */}
       <section style={{ maxWidth: '680px', margin: '0 auto', padding: '4.5rem 1.5rem 5rem', textAlign: 'center' }}>
-        <div style={{ width: 64, height: 64, borderRadius: '16px', background: 'rgba(229,57,53,0.1)', border: '1px solid rgba(229,57,53,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', margin: '0 auto 1.5rem' }}>🛡️</div>
+        <div style={{ width: 64, height: 64, borderRadius: '16px', background: 'rgba(46,125,50,0.1)', border: '1px solid rgba(46,125,50,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', margin: '0 auto 1.5rem' }}>🛡️</div>
         <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 900, color: '#E2E8F0', letterSpacing: '-0.5px', marginBottom: '0.9rem' }}>
           Been Scammed? Report It Now.
         </h2>
@@ -274,7 +274,7 @@ export default function HomePage() {
         <button
           className="cta-btn"
           onClick={() => navigate('/report')}
-          style={{ padding: '1rem 2.75rem', background: '#E53935', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 800, fontSize: '1rem', cursor: 'pointer', boxShadow: '0 4px 20px rgba(229,57,53,0.3)' }}
+          style={{ padding: '1rem 2.75rem', background: '#2e7d32', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 800, fontSize: '1rem', cursor: 'pointer', boxShadow: '0 4px 20px rgba(46,125,50,0.3)' }}
         >
           Submit a Report →
         </button>
